@@ -1,2 +1,2 @@
 # Podcast Recommendation Engine
-:microphone: Building a podcast recommendation engine using NLP
+:microphone: Building a content-based recommendation engine using NLP
