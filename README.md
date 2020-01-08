@@ -1,2 +1,2 @@
-# podcast-recommendation-engine
+# Podcast Recommendation Engine
 Building a podcast recommendation engine using NLP
