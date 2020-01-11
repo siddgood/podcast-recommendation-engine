@@ -150,10 +150,8 @@ cv_matrix = cv.fit_transform(podcasts_df["text"])
 cv_cosine_sim = cosine_similarity(cv_matrix)
 ```
 
-**Model Results:**
-
 #### 2. TFIDF + Cosine Similarity
-[Term Frequency-Inverse Document Frequency (TF-IDF)](https://pathmind.com/wiki/bagofwords-tf-idf) works the similarly to BoW, however, each entry of the fixed-length vector is now replaced with TF-IDF. TF-IDF is another type of calculation that gives each word in the text a **weight**. First, the frequency of a term in a document is calculated (Term Frequency) and is penalized by that same term appearing in every other document. The idea is to penalize words that appear frequently in a text (i.e. "and" or "the") and given them less value.
+[Term Frequency-Inverse Document Frequency (TF-IDF)](https://pathmind.com/wiki/bagofwords-tf-idf) works similarly to BoW, however, each entry of the fixed-length vector is now replaced with TF-IDF. TF-IDF is another type of calculation that gives each word in the text an assigned weight. First, the frequency of a term in a document is calculated (Term Frequency) and is penalized by that same term appearing in every other document. The idea is to penalize words that appear frequently in a text (i.e. "and" or "the") and given them less value.
 
 ![](images/tfidf.png)
 
@@ -165,8 +163,6 @@ tf_matrix = tf.fit_transform(podcasts_df["text"])
 tf_cosine_sim = cosine_similarity(tf_matrix)
 ```
 
-**Model Results:**
-
 #### 3. GloVe Embedding + Cosine Similarity
 Developed by Stanford researchers, the GloVe embedding method attempts to capture semantic meaning in a vector space. In short, consider the canonical example:
 
@@ -176,14 +172,54 @@ GloVe is very similar to how Word2Vec (which is another embedding method that pr
   * [GloVe](https://mlexplained.com/2018/04/29/paper-dissected-glove-global-vectors-for-word-representation-explained/)
   * [Word2Vec](https://towardsdatascience.com/introduction-to-word-embedding-and-word2vec-652d0c2060fa)
 
+```
+from gensim.models import KeyedVectors
+
+glove_model = KeyedVectors.load_word2vec_format("../word2vec/glove.6B.50d.txt.word2vec")
+
+glove_mean_embedding_vectorizer = MeanEmbeddingVectorizer(glove_model)
+glove_mean_embedded = glove_mean_embedding_vectorizer.fit_transform(podcasts_df['text'])
+glove_cosine_sim = cosine_similarity(glove_mean_embedded)
+```
+
 #### 4. Custom Trained Word2Vec + Cosine Similarity
-Either you can use a pre-trained word embedding, or you can train your Word2Vec embedding. Usually, training your own word vectors is a good approach for a domain-focused NLP project like this one.
+Either you can use a pre-trained word embedding, or you can train your Word2Vec embedding. Usually, training and building your own set of word vectors is a good approach for a domain-focused NLP project like this one.
 
 There are 2 approaches to training a Word2Vec model
   * BoW
   * skip-gram
 
-I decided to go with the skip-gram approach as it yield (in my opinion) better results. Also, according to [Mikolov](https://en.wikipedia.org/wiki/Tomas_Mikolov) (the inventor of Word2Vec), skip-gram works better with small training data. Details regarding these two methods can be found [here](https://stackoverflow.com/questions/38287772/cbow-v-s-skip-gram-why-invert-context-and-target-words)!
+I decided to go with the skip-gram approach as it yields (in my opinion) better results. Also, according to [Mikolov](https://en.wikipedia.org/wiki/Tomas_Mikolov) (the inventor of Word2Vec), skip-gram works better with small training data. Details regarding these two methods can be found [here](https://stackoverflow.com/questions/38287772/cbow-v-s-skip-gram-why-invert-context-and-target-words)!
 
+```
+from gensim.models import Word2Vec
+from nltk.tokenize import RegexpTokenizer
 
-#### 5. Word2Vec + Smooth Inverse Frequency + Cosine Similarity
+text_list = list(podcasts_df.text)
+tokenized_text = [tokenizer.tokenize(i) for i in text_list]
+
+w2v_model = Word2Vec(tokenized_text, sg=1)
+
+mean_embedding_vectorizer = MeanEmbeddingVectorizer(w2v_model)
+mean_embedded = mean_embedding_vectorizer.fit_transform(podcasts_df['text'])
+w2v_cosine_sim = cosine_similarity(mean_embedded)
+```
+
+This model performed the **best** in my opinion.
+
+**Podcast Word Embedding Visualizations**
+
+![](images/w2v.png)
+*Each blue dot represents a word in a 2D vector space*
+
+![](images/similar_words.png)
+*Shows the clustering of similar words that were randomly chosen from the above graph*
+
+#### 5. Word2Vec + Smooth Inverse Frequency + Cosine Similarity *(an honest attempt)*
+SIF is a technique to improve the Word2Vec embedding that was presented in this [research paper](https://openreview.net/pdf?id=SyK00v5xx). I followed the SIF implementation as explained in the paper and wrote some code with the help of some online [resources](https://github.com/kakshay21/sentence_embeddings).
+
+On a high level *(based on what I understood from what I read)*, SIF takes a weighted average of the word embeddings in a sentence, and it removes common components by subtracting out the embedding's first principal component in order minimize the weight given to irrelevant words.
+
+This model performed the **worst**, but I am not too sure if my understanding and implementation of this method were correct.
+
+## Results
