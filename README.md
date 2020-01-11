@@ -220,6 +220,50 @@ SIF is a technique to improve the Word2Vec embedding that was presented in this 
 
 On a high level *(based on what I understood from what I read)*, SIF takes a weighted average of the word embeddings in a sentence, and it removes common components by subtracting out the embedding's first principal component in order minimize the weight given to irrelevant words.
 
+```
+from scipy.sparse.linalg import svds
+from sklearn.decomposition import TruncatedSVD
+
+def remove_first_principal_component(X):
+    svd = TruncatedSVD(n_components=1, n_iter=7, random_state=0)
+    svd.fit(X)
+    pc = svd.components_
+    XX = X - X.dot(pc.transpose()) * pc
+    return XX
+
+def smooth_inverse_frequency(sent, a=0.001, word2vec_model=w2v_model):
+    word_counter = {}
+    sentences = []
+    total_count = 0
+    no_of_sentences = 0
+    
+    for s in sent:
+        for w in s:
+            if w in word_counter:
+                word_counter[w] = word_counter[w] + 1
+            else:
+                word_counter[w] = 1
+        total_count = total_count + len(s)
+        no_of_sentences = no_of_sentences + 1
+    
+    sents_emd = []
+    for s in sent:
+        sent_emd = []
+        for word in s:
+            if word in word2vec_model:
+                emd = (a/(a + (word_counter[word]/total_count)))*word2vec_model[word]
+                sent_emd.append(emd)
+        sum_ = np.array(sent_emd).sum(axis=0)
+        sentence_emd = sum_/float(no_of_sentences)
+        sents_emd.append(sentence_emd)
+        
+    new_sents_emb = remove_first_principal_component(np.array(sents_emd))
+    return new_sents_emb
+
+sif_text_emd = smooth_inverse_frequency(text_list)
+sif_cosine_sim = cosine_similarity(sif_text_emd)
+```
+
 This model performed the **worst**, but I am not too sure if my understanding and implementation of this method were correct.
 
 ## Results
