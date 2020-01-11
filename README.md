@@ -23,7 +23,7 @@ There are many techniques to measure similarities between text, and one logical 
 
 However, another popular and common way of measuring similarity irrespective of text size is to consider the **cosine similarity** between two bodies of text. Since we can represent a set of words as a vector, we can measure the cosine of the angle between two vectors projected on an n-dimensional vector space. Unlike the *Euclidean distance* (number of common words) approach which measures the magnitude between two vectors, we are considering the angle.
 
-![](images/cosine.png)
+![](images/cosine2.png)
 
 More information regarding cosine similarity can be found [here](https://www.machinelearningplus.com/nlp/cosine-similarity/).
 
