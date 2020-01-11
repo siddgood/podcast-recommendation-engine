@@ -2,26 +2,25 @@
 :microphone: Building a content-based podcast recommender system using NLP
 
 ## Overview
-With the growth of podcasting in the past few years, it becomes increasingly difficult for users to discover new podcasts they may enjoy. Listeners may have a handful of regular podcasts they listen to and are usually reluctant or hesitant in listening to something new. Unlike with music or movies, users can't listen to the first 10 seconds or scrub through a preview to see if they like a particular podcast. Podcasts are usually long and topics per podcast vary greatly, which adds to the challenge of matching users to podcasts they might enjoy. Additionally, due to the sheer volume of podcasts and podcast episodes, it's near impossible for users to scour through them all to find the podcast they like.
+With the [growth of podcasting](https://www.nytimes.com/2019/03/06/business/media/podcast-growth.html) over the past few years, it becomes increasingly difficult for users to discover new podcasts they may enjoy. Listeners may have a handful of regular podcasts they listen to and are usually reluctant or hesitant in listening to something new. Unlike with music or movies, users can't listen to the first 10 seconds or scrub through a preview to see if they like a particular podcast. Podcasts are usually long and topics per podcast vary greatly, which adds to the challenge of matching users to podcasts they might enjoy. Additionally, due to the sheer volume of podcasts and podcast episodes, it's near impossible for users to scour through them all to find the podcast they like.
 
 However, we can potentially aggregate metadata about podcasts that a user does like and employ various NLP techniques to recommend new, similar podcasts that they may enjoy.
 
 ### Content-Based Recommendation Systems
-Content-based recommendation systems is one main type of recommender systems that is used to provide recommendations to a user. This type of recommendation system takes in a user's information and preferences and picks items to recommend that are similar in content. With continually growing podcast database, a content-based recommendation engine could select a subset of podcasts (or even specific podcast episodes) and determine an order in which to display them to a users. Based on a user profile, this system could analyze podcast descriptions and identify podcasts that are similar to the user's preferences.
+A **content-based recommendation system** is one main type of recommender systems that is used to provide recommendations to a user. This type of recommendation system takes in a user's information and preferences and picks items to recommend that are similar in content. With continually growing podcast database, a content-based recommendation engine could select a subset of podcasts (or even specific podcast episodes) and determine an order in which to display them to a user. Based on a user profile, this system could analyze podcast descriptions and identify podcasts that are similar to the user's preferences.
 
 More information regarding content-based recommender systems and other recommender systems can be found [here](https://www.quora.com/What-are-the-types-of-recommender-system).
 
 ![](images/content-rec.png)
 
 ### Measuring Similarity
-After building a user's profiles, we must establish a notion of similarity between what a user likes and potential recommendations. For instance, if a user provides a particular podcast that he likes, we have to find some way of finding similar podcasts.
+After building a user's profiles, we must establish a notion of similarity between what a user likes and potential recommendations. For instance, if a user provides a particular podcast that he or she likes, we have to find some way of finding similar podcasts.
 
 Given a particular podcast, we can gather important textual information about that podcast (title, description, episode titles, episode descriptions, etc.). Then, we must compare it with every other podcast in a database and return a list of podcasts that are "similar."
 
+There are many techniques to measure similarities between text, and one logical technique is counting the number of common words between two documents. However, an inherent flaw in this method is that number of common words will naturally increase as document sizes increase even if two documents talk about different topics.
 
-There are many techniques to measure similarities between text, and one logical technique is counting the number of common words between two documents. However, an inherent flaw in this method is that number of common words will naturally increase even as document sizes increase even if two documents talk about different topics.
-
-However, another popular and common way of measuring similarity irrespective of text size is to consider the **cosine similarity** between two bodies of text. Since we can represent a set of words as a vector, we can measure the cosine of the angle between two vectors projected on an n-dimensional vector space. Unlike the *Euclidean distance* (number of common words) approach which measures the magnitude between two vectors, we are considering the angle.
+However, another popular and common way of measuring similarity irrespective of text size is to consider the **cosine similarity** between two bodies of text. Since we can represent a set of words as a vector, we can measure the cosine of the angle between two vectors projected on an n-dimensional vector space. Unlike the *Euclidean distance* (number of common words) approach, which measures the magnitude between two vectors, we are now considering the angle.
 
 ![](images/cosine2.png)
 
@@ -30,9 +29,9 @@ More information regarding cosine similarity can be found [here](https://www.mac
 ## Data and Features
 Since I couldn't find any publicly available podcast dataset or any APIs to retrieve podcast information, I decided to scrape Apple Podcasts and build a custom dataset myself.
 
-Using a Python web scrapper, I iterated through each Apple Podcast main genre [category](https://podcasts.apple.com/us/genre/podcasts/id26) (i.e. Arts, Business, Comedy, etc.) collecting podcast details for each podcast under "Popular Podcasts" ([example](https://podcasts.apple.com/us/genre/podcasts-comedy/id1303)).
+Using a Python web scrapper, I iterated through every Apple Podcast main genre [category](https://podcasts.apple.com/us/genre/podcasts/id26) (i.e. Arts, Business, Comedy, etc.) collecting podcast details for each podcast under "Popular Podcasts" ([example](https://podcasts.apple.com/us/genre/podcasts-comedy/id1303)).
 
-After data collection, I complied a DataFrame with approx. 4300 podcast.
+After data collection, I complied a DataFrame with approx. 4300 podcasts.
 
 For each podcast, I collected the following features:
 - Title (text)
@@ -45,19 +44,20 @@ For each podcast, I collected the following features:
 - Episode Titles (for up to the last 6 recent podcasts) (text)
 - Episode Descriptions (for up to the last 6 recent podcasts) (text)
 
-*Note: I collected this data around November 2019, so the episode titles and episode descriptions will most likely change by the time you are reading this.*
+*Note: I collected this data around November 2019, so the data is subject to change. The episode titles and episode descriptions will most likely change by the time you are reading this.*
 
 ## Exploratory Data Analysis
 
 ![](images/fig1.png)
 
-From the graph above, we can tell that Apple lists roughly the same number (~235) of "Popular Podcasts" per genre. So, for a given individual who has a favorite podcast in a particular genre, it becomes very difficult for that individual to search for similar, enjoyable podcasts. A user is faced with the burden of navigating through a large volume of podcasts not only within a specific genre but across genres as well just to find something that they might like.
+From the graph above, we can tell that Apple lists roughly the same number (~235) of "Popular Podcasts" per genre. So, for a given individual who has a favorite podcast in a particular genre, it becomes very difficult for that individual to search for similar, enjoyable podcasts. A user is faced with the burden of navigating through a large volume of podcasts not only within a specific genre but also across genres just to find something that they might like.
 
+### Ratings & Reviews
 ![](images/stats.png)
 
-The above table shows the average rating (out of 5) among all "Popular Podcasts" on iTunes per genre. The range of the average ratings is roughly 0.23, which is too small to say anything about a dominating, popular category. Also, it makes sense for iTunes to only display podcasts with high ratings on their "Popular Podcasts" page.
+The above table shows the average rating (out of 5) among all "Popular Podcasts" on iTunes per genre. The range of the average ratings is roughly 0.23, which is too small to say anything about a dominating, popular category. Also, it makes sense for iTunes to only display podcasts with high ratings under "Popular Podcasts."
 
-So, it doesn't make logical sense to recommend a podcast genre to a user solely based on ratings because all the ratings are relatively high. Also, just recommending a podcast genre, once again, isn't helpful to a user because not only will the user already know what genre(s) he likes, but also needs to navigate roughly 235 popular podcasts in any given genre to find a favorite.
+So, it doesn't make logical sense to recommend a podcast genre to a user solely based on ratings because all the ratings are high. Also, just recommending a podcast genre, once again, isn't helpful to a user because not only will the user already know what genre(s) he likes, but also needs to navigate roughly 235+ popular podcasts in any given genre to find a favorite.
 
 ![](images/fig2.png)
 
@@ -128,11 +128,13 @@ I selected the following podcasts to test:
   - [Call Her Daddy](https://podcasts.apple.com/us/podcast/call-her-daddy/id1418960261) (Comedy)
   - [Skip and Shannon: Undisputed](https://podcasts.apple.com/us/podcast/skip-and-shannon-undisputed/id1150088852) (Sports)
 
-My approach is to feed these selected podcasts into various recommendation engines, output the 10 most similar podcasts for each one, and manually verify if the recommendations make sense. Essentially, the model that performs the "best" is one that recommends other podcasts in maybe the same genre or same domain. It's important to note this is a subjective assessment and just because a podcast recommendation matches the same genre as the input doesn't necessarily mean that it is a good recommendation.
+My approach is to feed these selected podcasts into various recommendation engines, output the 10 most similar podcasts for each one, and manually verify if the recommendations *make sense*. Essentially, the model that performs the "best" is one that recommends other podcasts in maybe the same genre or same domain.
+
+It's important to note this is a *subjective* assessment and just because a podcast recommendation matches the same genre as the input doesn't necessarily mean that it is a good recommendation. A good recommendation has also to do with the content of the podcast itself, which I will try to assess given my domain knowledge in podcasts.
 
 
 ### Models
-Each model follows a standard recipe: **Word Embedding + Cosine Similarity**. An **embedding** is an NLP technique to transform words into some type of vector representation. Different embedding methods will produce different numerical representations. Details regarding embedding methods can be found [here])https://www.analyticsvidhya.com/blog/2017/06/word-embeddings-count-word2veec/ and [here](https://www.kdnuggets.com/2019/10/beyond-word-embedding-document-embedding.html)
+Each model follows a standard recipe: **Word Embedding + Cosine Similarity**. An **embedding** is an NLP technique to transform words into some type of vector representation. Different embedding methods will produce different numerical representations. Details regarding embedding methods can be found [here])https://www.analyticsvidhya.com/blog/2017/06/word-embeddings-count-word2veec/ and [here](https://www.kdnuggets.com/2019/10/beyond-word-embedding-document-embedding.html).
 
 The goal is to find a good embedding technique that clusters similar podcasts together so that the cosine distance between any two similarly clustered podcasts is low.
 
@@ -164,11 +166,12 @@ tf_cosine_sim = cosine_similarity(tf_matrix)
 ```
 
 #### 3. GloVe Embedding + Cosine Similarity
-Developed by Stanford researchers, the GloVe embedding method attempts to capture semantic meaning in a vector space. In short, consider the canonical example:
+Developed by Stanford researchers, the [GloVe](https://nlp.stanford.edu/projects/glove/) embedding method attempts to capture semantic meaning in a vector space. In short, consider the ubiquitous [example](https://www.technologyreview.com/s/541356/king-man-woman-queen-the-marvelous-mathematics-of-computational-linguistics/):
 
 *king - man + woman = queen*
 
-GloVe is very similar to how Word2Vec (which is another embedding method that precedes GloVe), but was built fundamentally different. GloVe (and Word2Vec) is much too long to explain, so I will reference the resources I used to learn about the two:
+GloVe is very similar to Word2Vec (which is another embedding method that precedes GloVe), but was built fundamentally different. GloVe (and Word2Vec) is much too long to explain, so I will reference the resources I used to learn about the two:
+
   * [GloVe](https://mlexplained.com/2018/04/29/paper-dissected-glove-global-vectors-for-word-representation-explained/)
   * [Word2Vec](https://towardsdatascience.com/introduction-to-word-embedding-and-word2vec-652d0c2060fa)
 
@@ -236,7 +239,7 @@ def smooth_inverse_frequency(sent, a=0.001, word2vec_model=w2v_model):
     sentences = []
     total_count = 0
     no_of_sentences = 0
-    
+
     for s in sent:
         for w in s:
             if w in word_counter:
@@ -245,7 +248,7 @@ def smooth_inverse_frequency(sent, a=0.001, word2vec_model=w2v_model):
                 word_counter[w] = 1
         total_count = total_count + len(s)
         no_of_sentences = no_of_sentences + 1
-    
+
     sents_emd = []
     for s in sent:
         sent_emd = []
@@ -256,7 +259,7 @@ def smooth_inverse_frequency(sent, a=0.001, word2vec_model=w2v_model):
         sum_ = np.array(sent_emd).sum(axis=0)
         sentence_emd = sum_/float(no_of_sentences)
         sents_emd.append(sentence_emd)
-        
+
     new_sents_emb = remove_first_principal_component(np.array(sents_emd))
     return new_sents_emb
 
@@ -279,14 +282,21 @@ From the models above, the **custom trained Word2Vec + cosine similarity** perfo
 
 *The table lists the top 5 (in order) recommendations for each podcast*
 
-To view all recommendations and recommendations for other models, refer to my Jupyter Notebook [here](https://github.com/siddgood/podcast-recommendation-engine/blob/master/notebooks/podcast_recommender.ipynb).
+To view all recommendations and recommendations for other models, refer to my [Jupyter Notebook](https://github.com/siddgood/podcast-recommendation-engine/blob/master/notebooks/podcast_recommender.ipynb).
 
-Personally, I believe this recommendation model does a good job of recommending similar podcasts based on the input (based on my small test set). As an avid podcast listener and someone who is familiar with many of these podcast titles, these recommendations make sense given the time in which the data was compiled (mid-Nov 2019). Not only does the model cluster well, but it also recommends relevant podcasts across different genres too. Compared to the other models, this one clearly outperformed by recommending the most similar podcasts.
+**Key Takeaways of Model:**
+  * Makes decent recommendations
+  * Clusters genre well
+  * Provides relevant recommendations across genres
+  * Consistent, sensible recommendations for 10+ recommendations (low model deterioration)
 
-The only recommendation that seems out of place is *The Archers* under *VIEWS*.
+Overall, I believe this recommendation model does a good job of recommending similar podcasts based on the input (based on my small test set). As an avid podcast listener and someone familiar with many of these podcast titles, these recommendations make sense given the time in which the data was compiled (mid-Nov 2019). Not only does the model cluster well, but it also recommends relevant podcasts across different genres too. Compared to the other models, this one outperformed by recommending the most similar podcasts.
+
+The only recommendations that seem out of place are *The Archers* and *The MeatEater Podcast*. But considering *VIEWS* and *Impaulsive* are podcasts that usually talk about random, unstructured topics each podcast episode, maybe these recommendations match the episode details from when the data was collected.
 
 ## Future Work
-  * Collect more podcast data
+  * Collect more podcast data (include podcast transcriptions)
+  * Recommend podcast episodes (granular recommendations)
   * Create a smaller or larger look back window for episode titles and descriptions
   * Consider sub-genres for specificity
   * Create a testing metric (i.e. genre classification or model deterioration) to validate model results
