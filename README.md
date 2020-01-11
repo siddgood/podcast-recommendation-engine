@@ -9,7 +9,7 @@ However, we can potentially aggregate metadata about podcasts that a user does l
 ### Content-Based Recommendation Systems
 Content-based recommendation systems is one main type of recommender systems that is used to provide recommendations to a user. This type of recommendation system takes in a user's information and preferences and picks items to recommend that are similar in content. With continually growing podcast database, a content-based recommendation engine could select a subset of podcasts (or even specific podcast episodes) and determine an order in which to display them to a users. Based on a user profile, this system could analyze podcast descriptions and identify podcasts that are similar to the user's preferences.
 
-More information regarding content-based recommender systems and other recommender systems can be found [here](https://www.quora.com/What-are-the-types-of-recommender-system)
+More information regarding content-based recommender systems and other recommender systems can be found [here](https://www.quora.com/What-are-the-types-of-recommender-system).
 
 ![](images/content-rec.png)
 
@@ -35,15 +35,15 @@ Using a Python web scrapper, I iterated through each Apple Podcast main genre [c
 After data collection, I complied a DataFrame with approx. 4300 podcast.
 
 For each podcast, I collected the following features:
-- Title
-- Producer
-- Genre
-- Description
-- Number of Episodes
-- Rating
-- Number of Reviews
-- Episode Titles (for up to the last 6 podcasts)
-- Episode Descriptions (for up to the last 6 podcasts)
+- Title (text)
+- Producer (text)
+- Unique Genre (text)
+- Description (text)
+- Number of Episodes (number)
+- Rating (number)
+- Number of Reviews (number)
+- Episode Titles (for up to the last 6 podcasts) (text)
+- Episode Descriptions (for up to the last 6 podcasts) (text)
 
 *Note: I collected this data around November 2019, so the episode titles and episode descriptions will most likely change by the time you are reading this.*
 
@@ -69,11 +69,11 @@ Looking at Fig. 3, we can see that the top 3 highly reviewed podcast genres are 
 
 Although, Fig. 3 gives us insight as to what podcast genres are "buzzing," it doesn't help with the fact of recommending podcasts to a user for some of the following reasons:
 
-1. Say a user likes a specific "Comedy" podcast. He knows he likes the "Comedy" genre and wants to find a new "Comedy" podcast. The average rating doesn't help because all the "Popular Podcasts" on iTunes are rated pretty high and too many reviews to read.
+  1. Say a user likes a specific "Comedy" podcast. He knows he likes the "Comedy" genre and wants to find a new "Comedy" podcast. The average rating doesn't help because all the "Popular Podcasts" on iTunes are rated pretty high and too many reviews to read.
 
-2. Say a user likes a specific "Government" podcast. The "Government" genre doesn't have an active community with many people reviewing podcasts, so the user has no way of knowing what podcast to listen to next, and he is not willing to scour through the ~240 "Popular Podcasts" listed on the "Government" podcast page.
+  2. Say a user likes a specific "Government" podcast. The "Government" genre doesn't have an active community with many people reviewing podcasts, so the user has no way of knowing what podcast to listen to next, and he is not willing to scour through the ~240 "Popular Podcasts" listed on the "Government" podcast page.
 
-3. Say a user likes a specific podcast in some genre. He wants to find a new podcast to listen to and he doesn't care about the genre. He just wants something similar to what he has been listening to. What can he do?
+  3. Say a user likes a specific podcast in some genre. He wants to find a new podcast to listen to and he doesn't care about the genre. He just wants something similar to what he has been listening to. What can he do?
 
 All of these are possible situations a user can run into. So, the question arises can we build a model to recommend a podcast to a user based on what he podcast he likes or what he listened to in the past?
 
@@ -96,3 +96,94 @@ Let's look at one more genre: "News" just to see some interesting differences.
 ![](images/wordcloud3.png)
 
 ## Building a Recommender System using NLP
+
+### Text Pre-processing
+Before building any recommendation model, I aggregated all the textual features and pre-processed the text by following these steps:
+
+  1. Removed mixed alphanumeric characters
+  2. Removed any URLs
+  3. Removed non-alphanumeric and non-space characters
+  4. Tokenized text
+  5. Removed custom stop words
+  6. Stemmed text via [lemmatization](https://www.datacamp.com/community/tutorials/stemming-lemmatization-python)
+
+These are standard pre-processing techniques that I have read and learned about before. An explanation regarding most of these steps can be found [here](https://www.kdnuggets.com/2019/04/text-preprocessing-nlp-machine-learning.html).
+
+### Modeling Approach
+
+Most of the models I decided to build were inspired by this Medium [article](https://medium.com/@adriensieg/text-similarities-da019229c894) as well as other articles and research I read online, which I will later reference down below.
+
+Unlike a supervised learning model, there is no real way of validating the recommendations. So, I decided to select a small set of podcasts (ones that I listen to and other popular ones) and physically see if the model recommendations make logical sense.
+
+I selected the following podcasts to test:
+  - [The Daily](https://podcasts.apple.com/us/podcast/the-daily/id1200361736) (News)
+  - [Up First](https://podcasts.apple.com/us/podcast/up-first/id1222114325) (News)
+  - [VIEWS with David Dobrik and Jason Nash](https://podcasts.apple.com/us/podcast/views-with-david-dobrik-and-jason-nash/id1236778275) (Comedy)
+  - [Impaulsive with Logan Paul](https://podcasts.apple.com/us/podcast/impaulsive-with-logan-paul/id1442164847) (Comedy)
+  - [The Bill Simmons Podcast](https://podcasts.apple.com/us/podcast/the-bill-simmons-podcast/id1043699613) (Sports)
+  - [My Favorite Murder with Karen Kilgariff and Georgia Hardstark](https://podcasts.apple.com/us/podcast/my-favorite-murder-karen-kilgariff-georgia-hardstark/id1074507850) (True Crime)
+  - [This American Life](https://podcasts.apple.com/us/podcast/this-american-life/id201671138) (Society and Culture)
+  - [Joel Osteen Podcast](https://podcasts.apple.com/us/podcast/joel-osteen-podcast/id137254859) (Religion & Spirituality)
+  - [TED Radio Hour](https://podcasts.apple.com/us/podcast/ted-radio-hour/id523121474) (Technology)
+  - [Call Her Daddy](https://podcasts.apple.com/us/podcast/call-her-daddy/id1418960261) (Comedy)
+  - [Skip and Shannon: Undisputed](https://podcasts.apple.com/us/podcast/skip-and-shannon-undisputed/id1150088852) (Sports)
+
+My approach is to feed these selected podcasts into various recommendation engines, output the 10 most similar podcasts for each one, and manually verify if the recommendations make sense. Essentially, the model that performs the "best" is one that recommends other podcasts in maybe the same genre or same domain. It's important to note this is a subjective assessment and just because a podcast recommendation matches the same genre as the input doesn't necessarily mean that it is a good recommendation.
+
+
+### Models
+Each model follows a standard recipe: **Word Embedding + Cosine Similarity**. An **embedding** is an NLP technique to transform words into some type of vector representation. Different embedding methods will produce different numerical representations. Details regarding embedding methods can be found [here])https://www.analyticsvidhya.com/blog/2017/06/word-embeddings-count-word2veec/ and [here](https://www.kdnuggets.com/2019/10/beyond-word-embedding-document-embedding.html)
+
+The goal is to find a good embedding technique that clusters similar podcasts together so that the cosine distance between any two similarly clustered podcasts is low.
+
+#### 1. CountVectorizer (Bag-of-Words) + Cosine Similarity
+The [Bag-of-Words](https://machinelearningmastery.com/prepare-text-data-machine-learning-scikit-learn/) model ignores the order of the information and only considers the frequency of words in a text. So, the CountVectorizer method identifies each unique word and builds a vocabulary of seen words. Then, each text document is transformed into a fixed-length vector (length of the vocabulary of known words) where each entry of the vector denotes the count of that word.
+
+![](/images/bow-image.png)
+
+```
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+cv = CountVectorizer()
+cv_matrix = cv.fit_transform(podcasts_df["text"])
+cv_cosine_sim = cosine_similarity(cv_matrix)
+```
+
+**Model Results:**
+
+#### 2. TFIDF + Cosine Similarity
+[Term Frequency-Inverse Document Frequency (TF-IDF)](https://pathmind.com/wiki/bagofwords-tf-idf) works the similarly to BoW, however, each entry of the fixed-length vector is now replaced with TF-IDF. TF-IDF is another type of calculation that gives each word in the text a **weight**. First, the frequency of a term in a document is calculated (Term Frequency) and is penalized by that same term appearing in every other document. The idea is to penalize words that appear frequently in a text (i.e. "and" or "the") and given them less value.
+
+![](images/tfidf.png)
+
+```
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+tf = TfidfVectorizer()
+tf_matrix = tf.fit_transform(podcasts_df["text"])
+tf_cosine_sim = cosine_similarity(tf_matrix)
+```
+
+**Model Results:**
+
+#### 3. GloVe Embedding + Cosine Similarity
+Developed by Stanford researchers, the GloVe embedding method attempts to capture semantic meaning in a vector space. In short, consider the canonical example:
+
+*king - man + woman = queen*
+
+GloVe is very similar to how Word2Vec (which is another embedding method that precedes GloVe), but was built fundamentally different. GloVe (and Word2Vec) is much too long to explain, so I will reference the resources I used to learn about the two:
+  * [GloVe](https://mlexplained.com/2018/04/29/paper-dissected-glove-global-vectors-for-word-representation-explained/)
+  * [Word2Vec](https://towardsdatascience.com/introduction-to-word-embedding-and-word2vec-652d0c2060fa)
+
+#### 4. Custom Trained Word2Vec + Cosine Similarity
+Either you can use a pre-trained word embedding, or you can train your Word2Vec embedding. Usually, training your own word vectors is a good approach for a domain-focused NLP project like this one.
+
+There are 2 approaches to training a Word2Vec model
+  * BoW
+  * skip-gram
+
+I decided to go with the skip-gram approach as it yield (in my opinion) better results. Also, according to [Mikolov](https://en.wikipedia.org/wiki/Tomas_Mikolov) (the inventor of Word2Vec), skip-gram works better with small training data. Details regarding these two methods can be found [here](https://stackoverflow.com/questions/38287772/cbow-v-s-skip-gram-why-invert-context-and-target-words)!
+
+
+#### 5. Word2Vec + Smooth Inverse Frequency + Cosine Similarity
