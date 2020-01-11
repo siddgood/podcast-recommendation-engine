@@ -94,3 +94,5 @@ Let's look at one more genre: "News" just to see some interesting differences.
 
 **Fig. 6: Word Cloud of News Genre**
 ![](images/wordcloud3.png)
+
+## Building a Recommender System using NLP
