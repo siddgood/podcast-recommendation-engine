@@ -300,7 +300,7 @@ The only recommendations that seem out of place are *The Archers* and *The MeatE
   * Create a smaller or larger look back window for episode titles and descriptions
   * Consider sub-genres for specificity
   * Create a testing metric (i.e. genre classification or model deterioration) to validate model results
-  * Try collaborative filtering (given availability to user-rating data of podcasts)
+  * Try collaborative filtering (given availability of podcast user-rating data)
 
 ## Sources
   1. http://nadbordrozd.github.io/blog/2016/05/20/text-classification-with-word2vec/
