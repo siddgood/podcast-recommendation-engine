@@ -1,0 +1,7 @@
+numpy
+pandas
+requests
+beautifulsoup4
+Unidecode
+tqdm
+selenium
